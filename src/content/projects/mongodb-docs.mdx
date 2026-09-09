@@ -1,0 +1,68 @@
+export const metadata = {
+  title: "DOCS & ENGINEERING @ MONGODB",
+  order: 1,
+};
+
+<Meta
+  role="Associate Technical Writer"
+  team="AI Tooling Team + Server Docs"
+  time="August 2024 – Present"
+/>
+
+
+I'm an engineer and writer on a team dedicated to building AI-powered 
+tooling and automation to modernize our documentation workflow. Our team develops 
+agent skills, hooks, and new AI-supported processes that streamline how writers 
+work and bring AI directly into the docs process.
+
+Alongside this tooling work, I write documentation for new features on MongoDB's 
+core Server product. My work on the documentation team follows a docs-as-code 
+workflow: using rST/Markdown language to write documentation, versioning using Git,
+and pushing to an open-source monorepo shared across MongoDB's documentation sites, 
+where the work is reviewed by writers, engineers, and product managers before publishing.
+
+On the Server Docs team, I co-lead documentation for the Networking & Observability and 
+Workload Resilience teams, as well as for the MongoDB Shell, the MongoDB VS Code 
+extension, and the MongoDB IntelliJ extension sites.
+
+<Section open title="AI DOCS TOOLING & AGENTIC WORKFLOWS">
+
+- Currently building an AI-powered documentation QA system that uses multi-agent evaluation to measure whether feature documentation actually enables accurate question answering.
+- Built agent hooks that enforce the team's Git process for Claude-based coding agents ([git process hooks](https://github.com/mongodb/docs/tree/main/.claude/hooks/docs-git-process-hooks) &
+[PR size checks](https://github.com/mongodb/docs/blob/main/.claude/hooks/pr-size-check.py))
+- Built hooks that flag and block oversized PRs, based on a self-led audit of optimal PR size to reduce reviewer bottlenecks.
+- Built a ref-anchor checker that validates anchor changes against every docs site before merge, preventing broken builds across the docs platform.
+- Developed agent skills that automatically [fix nested component errors](https://github.com/mongodb/docs/tree/main/.claude/skills/fix-nested-components),
+  [broken external links](https://github.com/mongodb/docs/tree/main/.claude/skills/fix-404s), and [SEO issues](https://github.com/mongodb/docs/tree/main/.claude/skills/fix-seo)
+  across the docs.
+- Co-led an AI enablement session for 50+ docs writers and leads, the first presentation in a series of organization-wide sessions 
+  introducing AI-assisted workflows. Walked writers through AI-powered docs processes in small group activities.
+
+</Section>
+
+<Section title="DOCS PLATFORM ENGINEERING">
+
+Work on the documentation platform team.
+
+- Built and shipped TypeScript and React components for the docs site,
+  including interactive wayfinding and inline video components.
+- Authored automated tests and contributed 2 production PRs.
+
+<div className="flex flex-col sm:flex-row gap-4 items-start">
+  <img src="/wayfinding-collapsed.png" alt="Collapsed wayfinding component" width={1734} height={796} className="w-full sm:w-auto sm:h-64 h-auto rounded-lg" />
+  <img src="/wayfinding-expanded.png" alt="Expanded wayfinding component" width={1716} height={960} className="w-full sm:w-auto sm:h-64 h-auto rounded-lg" />
+</div>
+
+</Section>
+
+<Section title="PRODUCT OWNERSHIP">
+
+- Led end-to-end documentation for a year-long, cross-functional feature
+  initiative spanning 5+ engineering teams and multiple releases — covering a
+  breaking change affecting deployment availability, 2 new documentation pages,
+  and 8+ sets of code examples.
+- Led end-to-end documentation for a new MongoDB data-browsing playground
+  experience in VS Code, collaborating with product and engineering through
+  production release.
+
+</Section>

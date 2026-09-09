@@ -15,7 +15,11 @@
 
 # next.js
 /.next/
+**/.next/
 /out/
+
+# Claude Code local tool settings — not part of the site
+.claude/
 
 # production
 /build

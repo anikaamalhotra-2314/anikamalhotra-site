@@ -5,22 +5,92 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Lightbox image crossfade — see GalleryContext.tsx. */
+@keyframes lightbox-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Cobalt blue dot cursor, in place of the system arrow.
+   An inline SVG rather than JS, so there's no lag between the pointer and the
+   dot. The trailing "11 11" is the hotspot: it centres the click point on the
+   middle of the dot rather than its top-left corner.
+
+   Set on <html> and left to inherit, NOT on `*`. A universal selector would
+   re-set the dot on every descendant, which breaks any element that wants a
+   different cursor for its whole subtree.
+
+   The second rule keeps the dot over clickable things too. Without it they'd
+   fall back to the system hand pointer — from the browser's own link styles and
+   Tailwind's cursor-pointer class, both of which are declarations on the
+   element and so beat the inherited value. `inherit` hands them the dot back.
+
+   Trade-off: the hand pointer was the only remaining "this is clickable" cue,
+   so hover states now have to carry that on their own (the nav underline, the
+   tile background tint). */
+html {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Ccircle cx='9.5' cy='9.5' r='8.5' fill='%230313fc'/%3E%3C/svg%3E")
+      11 11,
+    auto;
+}
+
+a,
+button,
+summary,
+[role="button"],
+[class*="cursor-"] {
+  cursor: inherit;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sometype-mono);
+}
+
+/* Extra breathing room before a project screenshot, on top of the panel's
+   base flex gap — but only right after text/Meta, not between consecutive
+   screenshots, which should stay close together at the base gap. */
+[data-lightbox-group] > .project-image {
+  margin-top: 1.5rem;
+}
+
+[data-lightbox-group] > .project-image + .project-image {
+  margin-top: 0;
+}
+
+/* Dancing stars.
+   Each star toggles between just two angles about 10deg apart, so it reads as a
+   small twitch rather than a spin. steps(1) means no tweening — it snaps. The
+   ~2s durations (half spent at each angle) differ slightly per star so the
+   three fall out of sync instead of twitching together.
+
+   These animate the `rotate` property, not `transform`, on purpose: Tailwind v4
+   compiles -rotate-20 to `rotate: -20deg`, and `rotate` and `transform` compose
+   rather than override. Animating `transform` here would stack on top of the
+   class and tilt every star twice as far as intended. Sharing one property lets
+   the animation win while it runs, and lets the class supply the resting angle
+   when reduced motion switches the animation off below. */
+@keyframes star-dance-a {
+  0% { rotate: -20deg; }
+  50% { rotate: -10deg; }
+}
+
+@keyframes star-dance-c {
+  0% { rotate: 45deg; }
+  50% { rotate: 54deg; }
+}
+
+.star-a { animation: star-dance-a 2s steps(1) infinite; }
+.star-c { animation: star-dance-c 1.8s steps(1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .star-a,
+  .star-c {
+    animation: none;
+  }
 }
