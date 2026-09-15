@@ -3,6 +3,9 @@ import createMDX from "@next/mdx";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  experimental: {
+    viewTransition: true,
+  },
   // Let .md / .mdx files be treated as importable modules.
   pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
 };

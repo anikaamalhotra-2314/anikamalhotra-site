@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-
-const EMAIL = "aavm07@me.com";
+import { useEffect, useRef } from "react";
+import { hidesNav } from "./routeChrome";
 
 // Underline that wipes in from the left on hover. It's a scaled ::after bar
 // rather than a width transition so it animates on the compositor, and it's
@@ -25,28 +24,19 @@ export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const navRef = useRef<HTMLElement>(null);
-  const [emailCopied, setEmailCopied] = useState(false);
-
-  // mailto: does nothing visible on a machine with no default mail app
-  // registered (no error, no tab — it just silently no-ops), which is common
-  // for visitors on webmail. Copying the address as a fallback means the
-  // click is useful either way, and the confirmation tells people who *do*
-  // have a mail app that something happened.
-  const handleEmailClick = async () => {
-    try {
-      await navigator.clipboard.writeText(EMAIL);
-      setEmailCopied(true);
-      setTimeout(() => setEmailCopied(false), 2000);
-    } catch {
-      // Clipboard API unavailable — mailto: still fires normally.
-    }
-  };
+  const hidden = hidesNav(pathname ?? "");
 
   // Publish the nav's real rendered height as a CSS var so HOME (see
   // page.tsx) can size itself to exactly one viewport minus the nav,
   // instead of guessing its height with a fixed rem value that drifts
-  // out of sync whenever the nav's own padding/type size changes.
+  // out of sync whenever the nav's own padding/type size changes. When the
+  // nav is hidden, that's 0 — otherwise layout.tsx's pt-[var(--nav-h)]
+  // would leave behind a blank gap sized for the previous page's nav.
   useEffect(() => {
+    if (hidden) {
+      document.documentElement.style.setProperty("--nav-h", "0px");
+      return;
+    }
     const el = navRef.current;
     if (!el) return;
     const setVar = () => {
@@ -59,10 +49,12 @@ export default function Nav() {
     const observer = new ResizeObserver(setVar);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [hidden]);
+
+  if (hidden) return null;
 
   // Always handle the click ourselves so Next's <Link> doesn't also do its own
-  // hash scrolling (which double-appends the hash, e.g. /#WORK#WORK).
+  // hash scrolling (which double-appends the hash, e.g. /#HOME#HOME).
   const goToSection = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     if (pathname === "/") {
@@ -74,122 +66,61 @@ export default function Nav() {
   };
 
   return (
+    // pointer-events-none on the bar itself, re-enabled per link below: nav
+    // has no background anymore, but as a fixed, full-width element it still
+    // occupies that whole strip for hit-testing — without this, dragging a
+    // home-page element up into that strip (see Draggable.tsx) made it
+    // ungrabbable again, since clicks on the drag handle landed on empty nav
+    // space instead of reaching the element underneath.
     <nav
       ref={navRef}
-      className="sticky top-0 z-50 w-full flex justify-between md:justify-start gap-4 md:gap-40 px-6 md:px-20 py-6 md:py-8 text-base md:text-[1.2rem] bg-[var(--background)]/90 backdrop-blur-sm"
+      className="fixed top-0 left-0 z-50 w-full px-6 md:px-10 text-base md:text-[1.2rem] pointer-events-none"
     >
-      <Link href="/#HOME" onClick={goToSection("HOME")} className={linkClass}>
-        AM
-      </Link>
-      <Link href="/#WORK" onClick={goToSection("WORK")} className={linkClass}>
-        WORK
-      </Link>
-      <Link href="/ART" className={linkClass}>
-        ART
-      </Link>
-      <Link href="/ABOUT" className={linkClass}>
-        ABOUT
-      </Link>
-      <div className="ml-auto flex items-center gap-4">
-        <a
-          href="https://www.linkedin.com/in/anika-malhotra-298056214/"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="LinkedIn"
-          className="hover:opacity-60"
+      {/* items-start, not items-center: work/art stack two lines tall, and
+          the title should align with the top of that stack, not its
+          vertical middle — matching how this looked when the stack was
+          absolutely positioned instead of a real flex item (see below).
+
+          The left-hand spacer is invisible but NOT absolutely positioned —
+          it's a real (if invisible) flex item, matching the work/art
+          column's own width, so justify-between centers the title against
+          the visible content rather than the full nav width. That's also
+          what fixes a real bug: the work/art column used to be positioned
+          absolutely, which pulled it out of flow entirely, so nav's own
+          box was only ever as tall as the single-line title — two lines
+          shorter than the stack actually rendered. Scrolled content showed
+          through in that gap, under the stack's second line ("art") but
+          outside nav's own background. Making the stack a normal flex item
+          instead means its height is now what actually sizes nav. */}
+      <div className="flex items-start justify-between gap-4">
+        <div aria-hidden="true" className="invisible flex flex-col items-end gap-2">
+          <span className={linkClass}>work</span>
+          <span className={linkClass}>art</span>
+          <span className={linkClass}>resume</span>
+        </div>
+        <Link
+          href="/#HOME"
+          onClick={goToSection("HOME")}
+          className={`${linkClass} mt-1.5 pointer-events-auto`}
         >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M20 21v-6a4 4 0 0 0-8 0v6" />
-            <path d="M4 9v12" />
-            <circle cx="4" cy="4" r="2" />
-          </svg>
-        </a>
-        <span className="relative">
+          Anika Malhotra
+        </Link>
+        <div className="flex flex-col items-end gap-0.5">
+          <Link href="/WORK" className={`${linkClass} mt-3 pointer-events-auto`}>
+            work
+          </Link>
+          <Link href="/ART" className={`${linkClass} pointer-events-auto`}>
+            art
+          </Link>
           <a
-            href={`mailto:${EMAIL}`}
-            onClick={handleEmailClick}
-            aria-label="Email"
-            className="hover:opacity-60"
+            href="/Anika_Malhotra_Resume.pdf"
+            target="_blank"
+            rel="noreferrer"
+            className={`${linkClass} pointer-events-auto`}
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <path d="m22 6-10 7L2 6" />
-            </svg>
+            resume
           </a>
-          <span
-            role="status"
-            className={`pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded bg-[var(--foreground)] px-2 py-1 text-xs text-[var(--background)] transition-opacity duration-200 ${
-              emailCopied ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            email copied
-          </span>
-        </span>
-        <a
-          href="https://github.com/anikaamalhotra-2314?tab=repositories"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="GitHub"
-          className="hover:opacity-60"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.79-.25.79-.55
-              0-.27-.01-1.16-.02-2.11-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.69.08-.69
-              1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.7
-              0-1.26.45-2.29 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0
-              c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.8 1.18 1.83 1.18 3.09 0 4.43-2.69 5.41-5.25
-              5.69.41.36.78 1.06.78 2.14 0 1.54-.01 2.79-.01 3.17 0 .3.21.66.79.55A11.5 11.5 0 0 0 23.5 12
-              C23.5 5.73 18.27.5 12 .5Z" />
-          </svg>
-        </a>
-        <a
-          href="/Anika_Malhotra_Resume.pdf"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Resume"
-          className="hover:opacity-60"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <path d="M14 2v6h6" />
-          </svg>
-        </a>
+        </div>
       </div>
     </nav>
   );

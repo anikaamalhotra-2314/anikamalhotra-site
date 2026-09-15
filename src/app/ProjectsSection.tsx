@@ -1,221 +1,141 @@
-"use client";
-
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import ProjectTile from "./ProjectTile";
+import Link from "next/link";
 
-export type PanelProject = {
-  slug: string;
-  title: string;
-  body: React.ReactNode;
+type GridProject = {
+  id: string;
+  number: string;
+  icon: { src: string; alt: string; size?: number };
+  description: string;
 };
 
-export default function ProjectsSection({
-  projects,
-}: {
-  projects: PanelProject[];
-}) {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const active = openId
-    ? projects.find((p) => p.slug === openId) ?? null
-    : null;
+// The 6 real projects, in display order. Index within GRID_SIZE below is
+// what actually places each one among the "00" filler cells — see PROJECTS.
+// `id` doubles as the slug of its /WORK/[slug] page (see src/content/projects).
+const GRID_PROJECTS: GridProject[] = [
+  {
+    id: "mongodb-docs",
+    number: "01",
+    icon: { src: "/leaf-Photoroom.png", alt: "leaf" },
+    description:
+      "building ai-powered tools, writing code examples, and leading docs creation at mongodb. main tech: typescript, python, rst/mdx, git/github.",
+  },
+  {
+    id: "vino",
+    number: "02",
+    icon: { src: "/wine-glass-Photoroom.png", alt: "red wine glass", size: 72 },
+    description:
+      "designing and building a site for an accessible guide to wine for beginners.",
+  },
+  {
+    id: "personal-website",
+    number: "03",
+    icon: { src: "/person-website-icon-Photoroom.png", alt: "personal website" },
+    description:
+      "combining my personal design style and my love for web development to build this site.",
+  },
+  {
+    id: "omakase-nyc",
+    number: "04",
+    icon: { src: "/omakase.png", alt: "fish", size: 72 },
+    description:
+      "designing and implementing a website to track and share the best omakase restaurants in nyc.",
+  },
+  {
+    id: "tw-internship",
+    number: "05",
+    icon: { src: "/docs-icon-Photoroom.png", alt: "docs icon" },
+    description:
+      "writing and testing react native code samples for the realm database sdk docs.",
+  },
+  {
+    id: "ncr",
+    number: "06",
+    icon: { src: "/ncr.png", alt: "100 dollar bill", size: 72 },
+    description:
+      "building microapplications with react and external apis. creating a dashboard for api usage metrics to improve developer portal experience.",
+  },
+];
 
-  // Close on Escape, and lock body scroll while the panel is open.
-  useEffect(() => {
-    if (!openId) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpenId(null);
-    };
-    document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [openId]);
+// A 5-wide, 6-row grid of "00" filler cells with the 6 real projects
+// scattered through it (indices below), evoking a spreadsheet that's mostly
+// empty rows with a few filled in — plain grid-auto-flow, so it reflows
+// sanely at any column count instead of needing per-breakpoint coordinates.
+const GRID_COLUMNS = 5;
+const GRID_SIZE = 25;
+const PROJECT_AT_INDEX: Record<number, GridProject> = {
+  1: GRID_PROJECTS[0],
+  3: GRID_PROJECTS[1],
+  5: GRID_PROJECTS[2],
+  12: GRID_PROJECTS[3],
+  15: GRID_PROJECTS[4],
+  18: GRID_PROJECTS[5],
+};
 
+export default function ProjectsSection() {
   return (
-    <section
-      id="WORK"
-      className="relative min-h-screen flex flex-col items-center scroll-mt-24"
-    >
-
-      <div id="projects" className="w-full flex flex-col gap-15 px-6 md:px-10 pb-16 text-sm [&_h1]:text-base [&_h2]:text-sm [&_h1.text-xl]:text-lg">
-        {/* 1 & 3 */}
-        <div className="flex flex-col md:flex-row justify-between gap-15 md:gap-0">
-          <ProjectTile
-            id="mongodb-docs"
-            onOpen={setOpenId}
-            className="flex justify-center gap-3 w-full md:w-5/12"
-          >
-            <div className="mt-7">
-              <Image
-                className="-rotate-43"
-                src="/leaf-Photoroom.png"
-                alt="leaf"
-                width={68}
-                height={68}
-              />
-            </div>
-            <div className="flex flex-col justify-center gap-2 w-5/12">
-              <h1 className="text-xl">01.</h1>
-              <h2>DOCS & ENGINEERING @ MONGODB</h2>
-              <h2>Leading & creating documentation for Atlas workload resilience and building AI tooling for docs. </h2>
-            </div>
-          </ProjectTile>
-          <ProjectTile
-            id="personal-website"
-            onOpen={setOpenId}
-            className="flex justify-center gap-1 w-full md:w-5/12"
-          >
-            <div className="-mr-10">
-              <Image
-                src="/person-website-icon-Photoroom.png"
-                alt="personal website"
-                width={160}
-                height={160}
-              />
-            </div>
-            <div className="flex flex-col justify-center gap-2 w-5/12">
-              <h1>PERSONAL WEBSITE</h1>
-              <h2>Combining my personal design style and my love for web development to build this site. </h2>
-              <h1 className="text-xl">03.</h1>
-            </div>
-          </ProjectTile>
+    <section className="relative min-h-screen flex flex-col items-center pt-10">
+      <div className="w-full flex flex-col lg:flex-row gap-0 px-6 md:px-10 pb-16">
+        {/* The grid: mostly decorative "00" cells, with the real projects'
+            number + icon standing in for a handful of them. Extra left
+            padding here (beyond the section's own) so the grid doesn't sit
+            flush against it — it's the widest, busiest thing on the page. */}
+        <div
+          className="grid flex-1 gap-x-4 gap-y-10 pl-8 md:pl-16 text-sm text-black select-none"
+          style={{ gridTemplateColumns: `repeat(${GRID_COLUMNS}, minmax(0, 1fr))` }}
+        >
+          {Array.from({ length: GRID_SIZE }, (_, i) => {
+            const project = PROJECT_AT_INDEX[i];
+            if (!project) {
+              return (
+                <div key={i} aria-hidden="true">
+                  00
+                </div>
+              );
+            }
+            const size = project.icon.size ?? 56;
+            return (
+              <Link
+                key={i}
+                href={`/WORK/${project.id}`}
+                // p-2 for a bigger hover/hit target, cancelled by -m-2 so the
+                // number still lines up with the padding-less "00" cells.
+                className="flex flex-col items-start gap-2 text-black -m-2 p-2 rounded-lg transition hover:bg-black/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40"
+              >
+                <span className="text-sm">{project.number}</span>
+                <div className="w-full flex justify-center">
+                  <Image
+                    src={project.icon.src}
+                    alt={project.icon.alt}
+                    width={size}
+                    height={size}
+                    className="object-contain"
+                    style={{ width: size, height: size }}
+                  />
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
-        {/* 2 */}
-        <div className="flex justify-center">
-          <ProjectTile
-            id="vino"
-            onOpen={setOpenId}
-            className="flex justify-center w-full md:w-1/2"
-          >
-            <div className="flex flex-col justify-center gap-2 w-1/3 text-right">
-              <h1 className="text-xl">02.</h1>
-              <h1>VINO</h1>
-              <h2>Designing and building a site for an accessible guide to wine for beginners.</h2>
-            </div>
-            <div>
-              <Image
-                src="/wine-glass-Photoroom.png"
-                alt="red wine glass"
-                width={88}
-                height={88}
-              />
-            </div>
-          </ProjectTile>
-        </div>
-
-        {/* 4 & 5 */}
-        <div className="flex flex-col md:flex-row justify-between gap-15 md:gap-0">
-          <ProjectTile
-            id="omakase-nyc"
-            onOpen={setOpenId}
-            className="flex justify-center gap-3 w-full md:w-5/12"
-          >
-            <div className="flex flex-col justify-center gap-2 w-5/12">
-              <h1 className="text-xl">04.</h1>
-              <h2>OMAKASE NYC</h2>
-              <h2>Designing and implementing a website to track and share the best omakase restaurants in NYC. </h2>
-              <Image
-                className="mt-3"
-                src="/omakase.png"
-                alt="fish"
-                width={176}
-                height={176}
-              />
-            </div>
-          </ProjectTile>
-          <ProjectTile
-            id="tw-internship"
-            onOpen={setOpenId}
-            className="flex justify-center w-full md:w-1/2"
-          >
-            <div className="flex flex-col justify-center gap-2 w-1/3 text-right">
-              <h1 className="text-xl">05.</h1>
-              <h1>MONGODB TECH WRITING INTERNSHIP</h1>
-              <h2>Writing and testing React Native code samples for the Realm Database SDK docs.</h2>
-            </div>
-            <div className="mt-5">
-              <Image
-                src="/docs-icon-Photoroom.png"
-                alt="docs icon"
-                width={144}
-                height={144}
-              />
-            </div>
-          </ProjectTile>
-        </div>
-
-        {/* 6 */}
-        <div className="flex justify-center">
-          <ProjectTile
-            id="ncr"
-            onOpen={setOpenId}
-            className="flex justify-center w-full md:w-1/2"
-          >
-            <div className="flex flex-col justify-center gap-2 w-5/12">
-              <div>
-                <Image
-                  src="/ncr.png"
-                  alt="100 dollar bill"
-                  width={144}
-                  height={144}
-                />
-              </div>
-              <h1>NCR SOFTWARE ENGINEERING INTERNSHIP - DIGITAL BANKING</h1>
-              <h2>Building microapplications with React and external APIs. Creating a dashboard for API usage metrics to improve developer portal experience.</h2>
-              <h1 className="text-xl">06.</h1>
-            </div>
-          </ProjectTile>
-        </div>
+        {/* The list: same 6 projects, described in full — lowercase to match
+            the grid's own "00"/number styling rather than the Title Case
+            headings each project's own page uses. */}
+        <ol className="flex flex-col gap-8 w-full lg:w-[20rem] shrink-0 mt-10 lg:-ml-10 text-sm lowercase">
+          {GRID_PROJECTS.map((project, i) => (
+            <li key={project.id}>
+              <Link
+                href={`/WORK/${project.id}`}
+                className="flex gap-3 text-left hover:opacity-60"
+              >
+                <span className="text-black shrink-0">
+                  [{String(i + 1).padStart(3, "0")}]
+                </span>
+                <span>{project.description}</span>
+              </Link>
+            </li>
+          ))}
+        </ol>
       </div>
-
-      {/* Overlay */}
-      <div
-        onClick={() => setOpenId(null)}
-        className={`fixed inset-0 z-60 bg-black/30 transition-opacity duration-300 ${
-          openId ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        aria-hidden={!openId}
-      />
-
-      {/* Side panel */}
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-hidden={!openId}
-        aria-label={active ? active.title : undefined}
-        className={`fixed top-0 right-0 z-70 h-full w-full md:w-3/4 overflow-y-auto bg-[var(--background)] border-l border-black/10 shadow-xl transition-transform duration-300 ease-out ${
-          openId ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        {active && (
-          <div className="flex flex-col gap-6 p-8">
-            <button
-              onClick={() => setOpenId(null)}
-              aria-label="Close panel"
-              className="self-end text-2xl leading-none cursor-pointer hover:opacity-60"
-            >
-              ×
-            </button>
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl text-center">{active.title}</h2>
-            </div>
-            {/* Cap the measure. The panel is ~1080px on desktop, which ran the
-                body text to ~109 characters a line — well past the 45-75 that
-                stays comfortable to read, and the main reason the panel looked
-                like one slab of text. */}
-            <div
-              data-lightbox-group
-              className="flex w-full max-w-[90ch] flex-col gap-4 self-center"
-            >
-              {active.body}
-            </div>
-          </div>
-        )}
-      </aside>
     </section>
   );
 }

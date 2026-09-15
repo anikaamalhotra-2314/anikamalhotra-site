@@ -54,40 +54,20 @@ const components: MDXComponents = {
       <div className="flex flex-col gap-4 pt-2">{children}</div>
     </details>
   ),
-  // Metadata block that opens a project panel: <Meta role="..." time="..." />.
-  // Pass only the fields a project has — each one is optional, and they render
-  // in the fixed order below so every panel opens the same way.
-  Meta: ({
-    role,
-    team,
-    stack,
-    time,
-  }: {
-    role?: string;
-    team?: string;
-    stack?: string;
-    time?: string;
-  }) => {
-    const rows = [
-      ["Role", role],
-      ["Team", team],
-      ["Stack", stack],
-      ["Time", time],
-    ].filter(([, value]) => value) as [string, string][];
-
-    return (
-      <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 rounded-lg border border-black/10 px-5 py-4 mb-6">
-        {rows.map(([label, value]) => (
-          <div key={label} className="contents">
-            <dt className="text-sm uppercase tracking-[0.2em] opacity-50">
-              {label}
-            </dt>
-            <dd className="text-base">{value}</dd>
-          </div>
-        ))}
-      </dl>
-    );
-  },
+  // Layout markers, not visual components: <Intro> holds the plain narrative
+  // paragraphs, <Details> holds the collapsible <Section>s. The project page
+  // (src/app/WORK/[slug]/page.tsx) lays these two out as side-by-side columns
+  // via a CSS `:has()` selector keyed on Details' data-details attribute, so
+  // a project with no <Details> block (most of them, today) just renders its
+  // intro full-width instead of leaving an empty second column.
+  Intro: ({ children }: { children?: React.ReactNode }) => (
+    <div className="flex flex-col gap-4">{children}</div>
+  ),
+  Details: ({ children }: { children?: React.ReactNode }) => (
+    <div data-details className="flex flex-col gap-3">
+      {children}
+    </div>
+  ),
 };
 
 export function useMDXComponents(): MDXComponents {

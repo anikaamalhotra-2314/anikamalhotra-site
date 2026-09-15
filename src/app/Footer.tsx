@@ -1,29 +1,22 @@
-import { execSync } from "child_process";
 import FooterMeasure from "./FooterMeasure";
-
-function getLastUpdated(): string {
-  try {
-    const iso = execSync("git log -1 --format=%cI").toString().trim();
-    return new Date(iso).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  } catch {
-    return new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
-}
+import FooterLinks from "./FooterLinks";
 
 export default function Footer() {
-  const lastUpdated = getLastUpdated();
+  const now = new Date();
+  const lastUpdated = now.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const year = now.getFullYear();
 
   return (
-    <FooterMeasure className="w-full px-6 md:px-20 py-4 text-xs md:text-sm text-right opacity-60">
-      made with &lt;3 by Anika Malhotra · last updated {lastUpdated}
+    <FooterMeasure className="w-full bg-black px-6 md:px-20 py-6 text-sm md:text-base text-white">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+        <span>© {year} Anika Malhotra</span>
+        <FooterLinks />
+        <span>last updated {lastUpdated}</span>
+      </div>
     </FooterMeasure>
   );
 }

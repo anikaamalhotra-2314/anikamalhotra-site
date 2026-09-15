@@ -23,11 +23,7 @@ export default function ExpandableImage(props: ImageProps) {
         {...props}
       />
       {/* Hint only surfaces on hover, so the gallery reads clean at rest. */}
-      <span
-        className="pointer-events-none absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full
-          bg-black/60 px-3 py-1 text-xs text-white opacity-0 backdrop-blur-sm transition-opacity
-          duration-200 group-hover:opacity-100"
-      >
+      <span className="pointer-events-none absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 text-xs text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
         <svg
           width="12"
           height="12"

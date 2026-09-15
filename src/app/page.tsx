@@ -1,88 +1,76 @@
+"use client";
+
 import Image from "next/image";
-import ProjectsSection from "./ProjectsSection";
-import { getProjects } from "@/lib/projects";
+import WordDoc from "./WordDoc";
+import PhotoBooth from "./PhotoBooth";
+import ClockWidget from "./ClockWidget";
+import Draggable from "./Draggable";
 
-export default async function Home() {
-  const projects = await getProjects();
-
+// Desktop is a scattered mood-board: every piece absolutely positioned by
+// percentage over the section, matching a reference layout, and each piece
+// individually click-and-drag repositionable (see Draggable.tsx) — moving
+// one is a per-visitor, in-memory rearrangement, not saved anywhere.
+// Percentages (not fixed px) so the base arrangement scales with viewport
+// instead of breaking at anything other than the exact size it was measured
+// from. Mobile drops all of that and just stacks everything in flow order —
+// absolute positioning tuned for a wide desktop canvas has nowhere sane to
+// go on a narrow phone screen.
+export default function Home() {
   return (
-    <div>
-      {/* min-h-[100vh-navH] (not h-full) so HOME sizes itself off the
-          viewport directly, independent of WORK's own min-h-screen below
-          it — the two used to fight over a shared percentage-height
-          ancestor, which let HOME's box balloon to include WORK's height
-          and pushed the footer partway down the page instead of after
-          WORK. --nav-h is measured live from the actual nav (see Nav.tsx)
-          so HOME's bottom edge — and the star/scroll-cue pinned to it —
-          land exactly at the viewport edge instead of guessing the nav's
-          height and running off-screen by the difference. */}
-      <section
-        id="HOME"
-        className="relative min-h-[calc(100vh-var(--nav-h,4.75rem))] flex flex-col md:flex-row items-center justify-center md:justify-evenly gap-8 px-6 py-6 md:py-0 scroll-mt-24 overflow-hidden"
-      >
-        <div className="flex items-start md:ml-30 -translate-y-6 md:-translate-y-10">
-          <div className="md:mt-10">
-            <Image
-              className="w-28 md:w-55 h-auto"
-              src="/IMG_0355.JPG"
-              alt="screenprinted girl"
-              width={250}
-              height={250}
-            />
-          </div>
-          <div className="-ml-6 mt-6 md:mt-0 md:-ml-35">
-            <Image
-              className="w-25 md:w-37 h-auto"
-              src="/personal-site-pic.jpeg"
-              alt="image of anika malhotra"
-              width={165}
-              height={165}
-            />
-          </div>
-        </div>
-        <div className="max-w-sm -translate-y-6 md:-translate-y-10">
-          <h1 className="text-2xl md:text-3xl text-center md:text-right">
-            ANIKA MALHOTRA is a TECHNICAL WRITER / CODER / DESIGN LOVER in NYC.
-          </h1>
-        </div>
-        <div>
-          <Image
-            className="absolute top-1/8 left-1/50 -z-10 -rotate-20 star-a w-13 md:w-24 h-auto"
-            src="/red_stars-removebg-preview.png"
-            alt="red stars"
-            width={120}
-            height={120}
-          />
-          <Image
-            className="absolute bottom-14 right-6 md:right-16 -z-10 rotate-45 star-c w-10 md:w-16 h-auto"
-            src="/stars-removebg-preview.png"
-            alt="stars"
-            width={80}
-            height={80}
-          />
-        </div>
+    <section
+      id="HOME"
+      className="relative min-h-[calc(100vh-var(--nav-h,4.75rem))] flex flex-col items-center gap-10 px-6 py-10 md:block md:px-0 md:py-0 scroll-mt-24"
+    >
+      <Draggable className="w-full max-w-md md:absolute md:top-0 md:left-[8%] md:w-[33%] md:max-w-none">
+        {(handle) => <WordDoc titleBarProps={handle} />}
+      </Draggable>
 
-        {/* Scroll cue */}
-        <a
-          href="#WORK"
-          aria-label="Scroll to work"
-          className="absolute bottom-1/10 left-1/2 -translate-x-1/2 animate-bounce"
-        >
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </a>
-      </section>
+      <Draggable className="-mt-12 md:mt-0 md:absolute md:top-[22%] md:left-[43%] md:w-[8%]">
+        {(handle) => (
+          <Image
+            {...handle}
+            className="w-36 h-auto md:w-full"
+            src="/personal-site-pic.jpeg"
+            alt="image of anika malhotra"
+            width={514}
+            height={1260}
+          />
+        )}
+      </Draggable>
 
-      {/* WORK */}
-      <ProjectsSection projects={projects} />
-    </div>
+      <Draggable className="md:absolute md:top-[6%] md:left-[68%] md:w-[18%]">
+        {(handle) => (
+          <Image
+            {...handle}
+            className="w-56 h-auto md:w-full"
+            src="/IMG_0355.JPG"
+            alt="screenprinted girl"
+            width={3373}
+            height={1964}
+          />
+        )}
+      </Draggable>
+
+      <Draggable className="-mt-12 md:mt-0 md:absolute md:top-[15%] md:left-[56%] md:w-[15%]">
+        {(handle) => (
+          <Image
+            {...handle}
+            className="w-24 h-auto md:w-full opacity-50"
+            src="/girl-2.JPG"
+            alt="screenprinted girl"
+            width={800}
+            height={500}
+          />
+        )}
+      </Draggable>
+
+      <Draggable className="w-full max-w-xs aspect-[6/5] md:absolute md:top-[54%] md:left-[17%] md:w-[22%] md:max-w-none">
+        {(handle) => <PhotoBooth titleBarProps={handle} />}
+      </Draggable>
+
+      <Draggable className="w-40 aspect-square -mt-12 md:mt-0 md:absolute md:top-[53%] md:left-[71%] md:w-[15%] md:max-w-none">
+        {(handle) => <ClockWidget titleBarProps={handle} />}
+      </Draggable>
+    </section>
   );
 }

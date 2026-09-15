@@ -15,6 +15,17 @@ html {
   to { opacity: 1; }
 }
 
+/* Splash screen spinner — see SplashScreen.tsx. Each of the 8 ticks runs the
+   same fade, offset by a negative animation-delay of 1/8th of the cycle per
+   tick, so they're each mid-fade at a different point — that stagger alone
+   (the ticks' fixed rotation never changes) is what reads as a spinning
+   comet-tail, the classic system-spinner look, without literally rotating
+   anything. */
+@keyframes splash-tick {
+  0% { opacity: 1; }
+  100% { opacity: 0.15; }
+}
+
 /* Cobalt blue dot cursor, in place of the system arrow.
    An inline SVG rather than JS, so there's no lag between the pointer and the
    dot. The trailing "11 11" is the hotspot: it centres the click point on the
@@ -49,7 +60,7 @@ summary,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sometype-mono);
+  font-family: "Arial Narrow", Arial, sans-serif;
 }
 
 /* Extra breathing room before a project screenshot, on top of the panel's
@@ -63,34 +74,83 @@ body {
   margin-top: 0;
 }
 
-/* Dancing stars.
-   Each star toggles between just two angles about 10deg apart, so it reads as a
-   small twitch rather than a spin. steps(1) means no tweening — it snaps. The
-   ~2s durations (half spent at each angle) differ slightly per star so the
-   three fall out of sync instead of twitching together.
+/* Page navigation wipe — see layout.tsx's <ViewTransition name="page">.
+   Targeted by the bare group name (native View Transitions API selector
+   syntax), not the enter/exit prop values — those get set as a
+   view-transition-class, but selecting by that class didn't override the
+   browser's default cross-fade in testing, while the name selector does.
+   The new page sits static underneath, already in place. The old page sits
+   on top (z-index, since the browser's default paint order puts "new" on
+   top) and is progressively erased from the right edge toward the left.
 
-   These animate the `rotate` property, not `transform`, on purpose: Tailwind v4
-   compiles -rotate-20 to `rotate: -20deg`, and `rotate` and `transform` compose
-   rather than override. Animating `transform` here would stack on top of the
-   class and tilt every star twice as far as intended. Sharing one property lets
-   the animation win while it runs, and lets the class supply the resting angle
-   when reduced motion switches the animation off below. */
-@keyframes star-dance-a {
-  0% { rotate: -20deg; }
-  50% { rotate: -10deg; }
+   A hard clip-path edge reads as juddery here — a sharp, high-contrast line
+   sweeping across a busy page is one of the cases human motion perception is
+   most sensitive to, independent of actual frame rate. A soft-edged mask
+   (the --wipe-x custom property drives where the feather sits) reads as
+   smooth even with the same underlying frame timing, the way a feathered
+   wipe looks cleaner than a hard one in video editing. */
+@property --wipe-x {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
 }
 
-@keyframes star-dance-c {
-  0% { rotate: 45deg; }
-  50% { rotate: 54deg; }
+::view-transition-old(page) {
+  z-index: 1;
+  --wipe-x: 100%;
+  mask-image: linear-gradient(
+    to right,
+    black 0,
+    black calc(var(--wipe-x) - 48px),
+    transparent var(--wipe-x)
+  );
+  animation: page-wipe-away 1400ms linear forwards;
+  mix-blend-mode: normal;
 }
 
-.star-a { animation: star-dance-a 2s steps(1) infinite; }
-.star-c { animation: star-dance-c 1.8s steps(1) infinite; }
+::view-transition-new(page) {
+  z-index: 0;
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@keyframes page-wipe-away {
+  from {
+    --wipe-x: 100%;
+  }
+  to {
+    --wipe-x: 0%;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .star-a,
-  .star-c {
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* Project-page header ticker — see WORK/[slug]/page.tsx. The track renders
+   6 back-to-back copies of the same content and slides left by exactly 1/6
+   of its own total width — one copy's width — so copy 2 lands pixel-for-
+   pixel where copy 1 started and the loop restarts invisibly. It takes more
+   than 2 copies to do that without a gap: the visible strip is often wider
+   than a single copy (especially with generous gaps between fields), so with
+   only 2 copies the second one hadn't scrolled into view yet by the time the
+   first ran out, leaving a blank stretch mid-loop. Copies 3-6 are what's
+   still there to be seen during that same stretch. */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-16.6667%); }
+}
+
+.ticker-track {
+  animation: ticker 15s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
     animation: none;
   }
 }
