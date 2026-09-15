@@ -56,7 +56,7 @@ export default function Home() {
           <Image
             {...handle}
             className="w-24 h-auto md:w-full opacity-50"
-            src="/girl-2.JPG"
+            src="/girl-2.jpg"
             alt="screenprinted girl"
             width={800}
             height={500}
